@@ -1,0 +1,27 @@
+#!/usr/bin/env zsh
+
+zparseopts -A opts -myzsh:
+
+[ -n "$opts[--myzsh]" ] && MYZSH="$opts[--myzsh]"
+
+# check to see if $MYZSH is defined
+[ -z "$MYZSH" ] && echo "\$MYZSH must be defined as the path to a checked out source" >&2 && exit 1
+
+export MYZSH
+
+# check to see if $MYZSH is dirty. We don't need to check dirty things
+cd $MYZSH
+#[ -n "$(git status --porcelain)" ] && echo "$MYZSH is dirty. We don't check dirty things" >&2 && exit 1
+
+SANDBOX=$(mktemp -d)
+echo "Using sandbox $SANDBOX"
+
+cp "$MYZSH/tests/tester" "$SANDBOX/.zshrc"
+
+export ZDOTDIR="$SANDBOX"
+
+zsh -i
+exitcode=$?
+
+rm -rf "$SANDBOX"
+exit $exitcode

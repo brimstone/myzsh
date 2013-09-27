@@ -1,0 +1,19 @@
+#!zsh
+echo "MYZSH: $MYZSH"
+echo "Inside sandbox"
+cd "$SANDBOX"
+
+ERRORFILE=/tmp/myzsh.test.errors.$$
+
+echo "Sourcing myzsh"
+set > set.before
+source "$MYZSH/init" 2>"$ERRORFILE"
+set > set.after
+
+if [ -s "$ERRORFILE" ]; then
+	echo "Errors Reported when sourcing the main init file"
+	exit 1
+fi
+#diff -au set.before set.after | grep "^[-+][^-+]"
+
+exit 0
