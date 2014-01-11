@@ -1,0 +1,8 @@
+#!/usr/bin/zsh
+mkdir git
+cd git
+git init
+date > tracked
+git add tracked
+git commit -m "Blah"
+date > uncommited

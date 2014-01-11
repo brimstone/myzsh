@@ -1,20 +1,67 @@
 #!zsh
-echo "MYZSH: $MYZSH"
-echo "Inside sandbox"
-cd "$SANDBOX"
 
+show_prompt () {
+	echo "Prompt:"
+	print "PROMPT: $PROMPT"
+	print "RPROMPT: $RPROMPT"
+	echo
+}
+
+echo "=> Inside sandbox: $PWD"
+
+# Setting variables for this test
 ERRORFILE=/tmp/myzsh.test.errors.$$
+THEME="null"
+LPRIMARY=($MODULE)
 
-echo "Sourcing myzsh"
-set > set.before
+echo "=> Sourcing myzsh"
 source "$MYZSH/init" 2>"$ERRORFILE"
-set > set.after
+
+# Overriding theme
+theme_prompt () {
+	local i
+	LPOUTPUT=""
+	for ((i=1; i <= ${#lp_funcs}; i+=1)); do
+		$lp_funcs[$i] | read OUTPUT
+		[ -n "$OUTPUT" ] && LPOUTPUT+="$OUTPUT "
+	done
+	PROMPT="$LPOUTPUT"
+}
+
+echo "=> Themeing prompt"
+theme_prompt 2>>"$ERRORFILE"
+echo
+echo "=> User arrays:"
+echo "=> LPRIMARY: $LPRIMARY"
+echo "=> RPRIMARY: $RPRIMARY"
+echo "=> LSECONDARY: $LSECONDARY"
+echo "=> RSECONDARY: $RSECONDARY"
+echo
+show_prompt
+echo "Internal arrays:"
+set | grep -a _funcs=
+echo
 
 if [ -s "$ERRORFILE" ]; then
-	echo "Errors Reported when sourcing the main init file"
+	echo "Errors Reported before directory tests"
 	cat "$ERRORFILE"
+	rm "$ERRORFILE"
 	exit 1
 fi
-diff -au set.before set.after | grep "^[-+][^-+]"
+
+for d in *; do
+	echo "Entering $d"
+	pushd "$d" >/dev/null
+	theme_prompt 2>"$ERRORFILE"
+	show_prompt
+	if [ -s "$ERRORFILE" ]; then
+		echo "Errors Reported!"
+		cat "$ERRORFILE"
+		rm "$ERRORFILE"
+		exit 1
+	fi
+	popd >/dev/null
+done
+rm "$ERRORFILE"
 
 exit 0
