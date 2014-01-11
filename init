@@ -627,7 +627,8 @@ if [ -n "$SHELL" -a "${SHELL##*/}" != "zsh" ]; then
 	myzsh warning "Run 'myzsh persistent' to set zsh as your shell."
 	echo
 fi
-if [ ! -e "$HOME/.zshrc" ]; then
+# look all over for our .zshrc
+if [ ! -e "$ZDOTDIR/.zshrc" -a ! -e "$HOME/.zshrc" ]; then
 	myzsh warning "You don't seem to have a .zshrc config file."
 	myzsh warning "Run 'myzsh save' to save a default .zshrc file."
 	echo
