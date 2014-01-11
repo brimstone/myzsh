@@ -7,13 +7,18 @@ logit() {
 zparseopts -A opts -myzsh: -module: -verbose
 [ -n "$opts[--myzsh]" ] && export MYZSH="$opts[--myzsh]"
 [ -n "$opts[--module]" ] && export MODULE="$opts[--module]"
-export VERBOSE=FALSE
-[ -n "$opts[--verbose]" ] && export VERBOSE="TRUE"
+export VERBOSE="FALSE"
+[ -n "${(k)opts[--verbose]}" ] && export VERBOSE="TRUE"
+if [ -n "${(k)opts[--help]}" ]; then
+	echo "Usage $0 --myzsh path/to/myzsh --modules <name of module> --verbose"
+	exit
+fi
+
+# check to see if $MYZSH is defined
+[ -z "$MYZSH" ] && echo "\$MYZSH must be defined as the path to a checked out source" >&2 && exit 1
 
 # if module isn't specified, check all of them
 if [ -z "$MODULE" ]; then
-	echo "nope: $MODULE"
-	exit
 	pushd $MYZSH/modules > /dev/null
 	allmodules=(*)
 	popd >/dev/null
@@ -24,10 +29,7 @@ if [ -z "$MODULE" ]; then
 fi
 
 echo "Testing myzsh from $MYZSH and module $MODULE"
-echo
-
-# check to see if $MYZSH is defined
-[ -z "$MYZSH" ] && echo "\$MYZSH must be defined as the path to a checked out source" >&2 && exit 1
+logit
 
 cd $MYZSH
 
@@ -35,17 +37,18 @@ cd $MYZSH
 SANDBOX=$(mktemp -d)
 export ZDOTDIR="$SANDBOX"
 cd "$SANDBOX"
-echo "Using sandbox $SANDBOX"
-echo
+logit "Using sandbox $SANDBOX"
+logit
 
 # copy tester script
 cp "$MYZSH/tests/tester" "$SANDBOX/.zshrc"
 
 # make special directories
 for d in $MYZSH/tests/directories/*; do
-	echo "Running $d"
-	$d
-	echo
+	logit "Running $d"
+	[ "$VERBOSE" = "TRUE" ] && $d
+	[ "$VERBOSE" = "TRUE" ] || $d >/dev/null
+	logit
 done
 
 zsh -i

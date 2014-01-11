@@ -1,20 +1,24 @@
 #!zsh
 
-show_prompt () {
-	echo "Prompt:"
-	print "PROMPT: $PROMPT"
-	print "RPROMPT: $RPROMPT"
-	echo
+logit() {
+	[ "$VERBOSE" = "TRUE" ] && echo "$@"
 }
 
-echo "=> Inside sandbox: $PWD"
+show_prompt () {
+	logit "Prompt:"
+	logit "PROMPT: $PROMPT"
+	logit "RPROMPT: $RPROMPT"
+	logit
+}
+
+logit "=> Inside sandbox: $PWD"
 
 # Setting variables for this test
 ERRORFILE=/tmp/myzsh.test.errors.$$
 THEME="null"
 LPRIMARY=($MODULE)
 
-echo "=> Sourcing myzsh"
+logit "=> Sourcing myzsh"
 source "$MYZSH/init" 2>"$ERRORFILE"
 
 # Overriding theme
@@ -28,19 +32,19 @@ theme_prompt () {
 	PROMPT="$LPOUTPUT"
 }
 
-echo "=> Themeing prompt"
+logit "=> Themeing prompt"
 theme_prompt 2>>"$ERRORFILE"
-echo
-echo "=> User arrays:"
-echo "=> LPRIMARY: $LPRIMARY"
-echo "=> RPRIMARY: $RPRIMARY"
-echo "=> LSECONDARY: $LSECONDARY"
-echo "=> RSECONDARY: $RSECONDARY"
-echo
+logit
+logit "=> User arrays:"
+logit "=> LPRIMARY: $LPRIMARY"
+logit "=> RPRIMARY: $RPRIMARY"
+logit "=> LSECONDARY: $LSECONDARY"
+logit "=> RSECONDARY: $RSECONDARY"
+logit
 show_prompt
-echo "Internal arrays:"
-set | grep -a _funcs=
-echo
+logit "Internal arrays:"
+[ "$VERBOSE" = "TRUE" ] && set | grep -a _funcs=
+logit
 
 if [ -s "$ERRORFILE" ]; then
 	echo "Errors Reported before directory tests"
@@ -50,7 +54,7 @@ if [ -s "$ERRORFILE" ]; then
 fi
 
 for d in *; do
-	echo "Entering $d"
+	logit "Entering $d"
 	pushd "$d" >/dev/null
 	theme_prompt 2>"$ERRORFILE"
 	show_prompt
