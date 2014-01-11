@@ -12,8 +12,9 @@ set > set.after
 
 if [ -s "$ERRORFILE" ]; then
 	echo "Errors Reported when sourcing the main init file"
+	cat "$ERRORFILE"
 	exit 1
 fi
-#diff -au set.before set.after | grep "^[-+][^-+]"
+diff -au set.before set.after | grep "^[-+][^-+]"
 
 exit 0
